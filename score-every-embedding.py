@@ -127,10 +127,14 @@ def main():
         for i, (sentence, score) in enumerate(zip(sentences, similarities), 1):
             st.write(f"{i}. {sentence} (Similarity: {score:.4f})")
 
-
+    st.markdown("---") # Add a horizontal line for visual separation
+    st.markdown(
+        "Powered by [The SEO Consultant.ai](https://theseoconsultant.ai)",
+        unsafe_allow_html=True
+    )
 
 if __name__ == "__main__":
     main()
 
-    st.markdown("By: [The SEO Consultant.ai](https://theseoconsultant.ai)") # Credit and link
+
 
