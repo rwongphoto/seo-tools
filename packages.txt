@@ -1,2 +1,1 @@
 chromium
-apt-get update
