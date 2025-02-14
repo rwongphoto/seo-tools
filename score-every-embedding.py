@@ -5,7 +5,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 import re
 
-def create_navigation_menu(https://theseoconsultant.ai/wp-content/uploads/2024/12/cropped-theseoconsultant-logo-2.jpg:
+def create_navigation_menu(logo_url:
     """Creates a navigation menu for the Streamlit app with a logo."""
 
     menu_options = {
