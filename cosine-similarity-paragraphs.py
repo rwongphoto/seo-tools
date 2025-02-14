@@ -219,39 +219,26 @@ def create_navigation_menu(logo_url):
     st.markdown(menu_html, unsafe_allow_html=True)
 
 def main():
-    st.markdown(
-        """
-        <style>
-        .title {
-            display: flex;
-            justify-content: center;
-        }
-        </style>
-        """,
-        unsafe_allow_html=True
+    st.set_page_config(
+        page_title="Cosine Similarity Heat Map - Paragraphs | The SEO Consultant.ai",
+        page_icon=":art:"
     )
-    st.markdown("<h1 class='title'>Cosine Similarity Score - Every Embedding</h1>", unsafe_allow_html=True)
-
     logo_url = "https://theseoconsultant.ai/wp-content/uploads/2024/12/cropped-theseoconsultant-logo-2.jpg"
     create_navigation_menu(logo_url)
+    st.title("Cosine Similarity Heat Map - Paragraphs")
 
     # Input fields
-    url = st.text_input("Enter URL:", "https://www.rwongphoto.com/gallery/california-pictures/")
-    search_term = st.text_input("Enter Search Term:", "california photography")
+    url = st.text_input("Enter URL:", "")
+    search_term = st.text_input("Enter Search Term:", "")
 
-    if st.button("Calculate Similarity and Color Code"):
-        with st.spinner("Extracting Content and Calculating Similarities..."):
-            content = extract_content_from_url(url)
+    if st.button("Highlight"):
+        if not input_text or not search_term:
+            st.error("Please enter both text and a search term.")
+        else:
+            with st.spinner("Generating highlighted text..."):
+                highlighted_text = highlight_text(input_text, search_term)
 
-            if content:
-                try:
-                    image_png = color_code_text_by_similarity_png(content, search_term)
-
-                    st.image(image_png, caption="Color-Coded Text Based on Similarity", use_column_width=True)
-                except Exception as e:
-                    st.error(f"Error generating and displaying image: {e}")
-            else:
-                st.warning("Could not extract content from the URL.")
+            st.markdown(highlighted_text, unsafe_allow_html=True)  # Display highlighted text
 
     st.markdown("By: [The SEO Consultant.ai](https://theseoconsultant.ai)", unsafe_allow_html=True)
 
