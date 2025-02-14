@@ -27,22 +27,21 @@ def get_embedding(text, model, tokenizer):
     outputs = model(**inputs)
     return outputs.last_hidden_state.mean(dim=1).detach().numpy()
 
-def rank_sentences_by_similarity(text, search_term, tokenizer, model):
+def rank_paragraphs_by_similarity(text, search_term, tokenizer, model):
     """
-    Calculates cosine similarity between sentences and a search term using BERT.
+    Calculates cosine similarity between paragraphs and a search term using BERT.
 
     Returns:
-        A list of tuples: (sentence, similarity score)
+        A list of tuples: (paragraph, similarity score)
     """
+    paragraphs = text.split('\n\n')  # Split by double newline
+    paragraphs = [p.strip() for p in paragraphs if p.strip()] #Remove empty strings
 
-    sentences = re.split(r'(?<!\w\.\w.)(?<![A-Z][a-z]\.)(?<=\.|\?)\s', text)
-    sentences = [s.strip() for s in sentences if s.strip()]
-
-    sentence_embeddings = [get_embedding(sentence, model, tokenizer) for sentence in sentences]
+    paragraph_embeddings = [get_embedding(paragraph, model, tokenizer) for paragraph in paragraphs]
     search_term_embedding = get_embedding(search_term, model, tokenizer)
 
-    similarities = [cosine_similarity(sentence_embedding, search_term_embedding)[0][0]
-                    for sentence_embedding in sentence_embeddings]
+    similarities = [cosine_similarity(paragraph_embedding, search_term_embedding)[0][0]
+                    for paragraph_embedding in paragraph_embeddings]
 
     # Normalize the similarity scores to be between 0 and 1
     min_similarity = min(similarities)
@@ -52,7 +51,7 @@ def rank_sentences_by_similarity(text, search_term, tokenizer, model):
     else:
         normalized_similarities = [(s - min_similarity) / (max_similarity - min_similarity) for s in similarities]
 
-    return list(zip(sentences, normalized_similarities))
+    return list(zip(paragraphs, normalized_similarities))
 
 def extract_text_from_url(url):
     """
@@ -68,8 +67,6 @@ def extract_text_from_url(url):
         user_agent = "Mozilla/5.0 (iPhone; CPU iPhone OS 14_7_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.7.1 Mobile/15E148 Safari/604.1"
         chrome_options.add_argument(f"user-agent={user_agent}")
 
-        driver = webdriver.Chrome(options=chrome_options)
-        driver.get(url)
         driver = webdriver.Chrome(options=chrome_options)
         driver.get(url)
 
@@ -91,7 +88,7 @@ def extract_text_from_url(url):
         all_relevant_tags = soup.find_all(['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'li', 'p'])
         text = ""
         for tag in all_relevant_tags:
-            text += tag.get_text(separator=" ", strip=True) + "\n"
+            text += tag.get_text(separator=" ", strip=True) + "\n\n"
         return text.strip() # Returns a single string
 
     except Exception as e:
@@ -99,11 +96,11 @@ def extract_text_from_url(url):
         return None
 
 def highlight_text(text, search_term, tokenizer, model):
-    """Highlights text based on similarity to the search term using HTML/CSS, adding paragraph breaks."""
-    sentences_with_similarity = rank_sentences_by_similarity(text, search_term, tokenizer, model)
+    """Highlights paragraphs based on similarity to the search term using HTML/CSS."""
+    paragraphs_with_similarity = rank_paragraphs_by_similarity(text, search_term, tokenizer, model)
 
     highlighted_text = ""
-    for sentence, similarity in sentences_with_similarity:
+    for paragraph, similarity in paragraphs_with_similarity:
         if similarity < 0.35:
             color = "red"
         elif similarity < 0.65:
@@ -111,8 +108,7 @@ def highlight_text(text, search_term, tokenizer, model):
         else:
             color = "green"
 
-        # Enclose each sentence in a <p> tag for paragraph breaks
-        highlighted_text += f'<p style="color:{color};">{sentence}</p>'
+        highlighted_text += f'<p style="color:{color};">{paragraph}</p><br>'  # Paragraphs
     return highlighted_text
 
 def create_navigation_menu(logo_url):
@@ -187,16 +183,18 @@ def main():
     # Input fields
     source = st.radio("Select Input Source:", ("Text", "URL"))
 
+    input_text = ""  # Initialize input_text
+
     if source == "Text":
         input_text = st.text_area("Enter your text:", height=300, value="Paste your text here.")
     else:
         url = st.text_input("Enter URL:", "")
-        input_text = extract_text_from_url(url)
-        if input_text:
-            st.success("Content extracted from URL.")
-        elif url: # Show warning only if something was entered
-            st.warning("Could not extract content from the URL. Check the URL or try a different one.")
-
+        if url:  # Only attempt to extract if a URL is entered
+            input_text = extract_text_from_url(url)
+            if input_text:
+                st.success("Content extracted from URL.")
+            else:
+                st.warning("Could not extract content from the URL. Check the URL or try a different one.")
 
     search_term = st.text_input("Enter your search term:", value="Enter Your SEO Keyword Here")
 
