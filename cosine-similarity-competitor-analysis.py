@@ -87,11 +87,67 @@ def calculate_overall_similarity(urls, search_term, model, tokenizer):
             results.append((url, None))
 
     return results
+def create_navigation_menu(logo_url):
+    """Creates a top navigation menu for the Streamlit app with a logo above and centered."""
 
+    menu_options = {
+        "Home": "https://theseoconsultant.ai/",
+        "About": "https://theseoconsultant.ai/about/",
+        "Services": "https://theseoconsultant.ai/seo-consulting/",  # Flattened for top nav
+        "Blog": "https://theseoconsultant.ai/blog/",
+        "Contact": "https://theseoconsultant.ai/contact/"
+    }
+
+    st.markdown(
+        f"""
+        <div style="display: flex; justify-content: center;">
+            <img src="{logo_url}" width="350">
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    st.markdown(
+        """
+        <style>
+        .topnav {
+          overflow: hidden;
+          background-color: #f1f1f1; /* Adjust color as needed */
+          display: flex;              /* Use flexbox */
+          justify-content: center;    /* Horizontally center items */
+          margin-bottom: 35px;        /* Add space below the menu */
+        }
+
+        .topnav a {
+          float: left;
+          display: block;
+          color: black; /* Adjust color as needed */
+          text-align: center;
+          padding: 14px 16px;
+          text-decoration: none;
+        }
+
+        .topnav a:hover {
+          background-color: #ddd; /* Adjust color as needed */
+          color: black; /* Adjust color as needed */
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+    # Create the top navigation menu
+    menu_html = "<div class='topnav'>"
+    for key, value in menu_options.items():
+        menu_html += f"<a href='{value}' target='_blank'>{key}</a>"
+    menu_html += "</div>"
+
+    st.markdown(menu_html, unsafe_allow_html=True)
 
 def main():
+    logo_url = "https://theseoconsultant.ai/wp-content/uploads/2024/12/cropped-theseoconsultant-logo-2.jpg"
+    create_navigation_menu(logo_url)
     st.title("Cosine Similarity Competitor Analysis")
-    st.markdown("By: [The SEO Consultant.ai](https://theseoconsultant.ai)")
 
     # Input fields
     search_term = st.text_input("Enter Search Term:", "")
@@ -128,6 +184,12 @@ def main():
             data = {'URL': urls_plot, 'Similarity Score': scores_plot}
             df = pd.DataFrame(data)
             st.dataframe(df)
+
+    st.markdown("---") # Add a horizontal line for visual separation
+    st.markdown(
+        "Powered by [The SEO Consultant.ai](https://theseoconsultant.ai)",
+        unsafe_allow_html=True
+    )
 
 
 if __name__ == "__main__":
