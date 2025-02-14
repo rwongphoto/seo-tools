@@ -145,6 +145,7 @@ def create_navigation_menu(logo_url):
     st.markdown(menu_html, unsafe_allow_html=True)
 
 def main():
+st.set_page_config(page_title="Cosine Similarity Score - Every Embedding | The SEO Consultant.ai") # set page title here
     logo_url = "https://theseoconsultant.ai/wp-content/uploads/2024/12/cropped-theseoconsultant-logo-2.jpg"
     create_navigation_menu(logo_url)
     st.title("Cosine Similarity Competitor Analysis")
