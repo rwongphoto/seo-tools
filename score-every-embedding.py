@@ -127,6 +127,9 @@ def main():
         for i, (sentence, score) in enumerate(zip(sentences, similarities), 1):
             st.write(f"{i}. {sentence} (Similarity: {score:.4f})")
 
+st.markdown("By: [The SEO Consultant.ai](https://theseoconsultant.ai)") # Credit and link
+
 if __name__ == "__main__":
     main()
-st.markdown("By: [The SEO Consultant.ai](https://theseoconsultant.ai)") # Credit and link
+    
+
