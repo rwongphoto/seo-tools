@@ -57,7 +57,7 @@ def create_navigation_menu(logo_url):
     }
 
     # Create columns for layout
-    cols = st.columns([0.2, 0.8])  # Adjust column widths as needed
+    cols = st.columns([0.4, 0.6])  # Adjust column widths as needed
 
     with cols[0]:
         st.image(logo_url, width=150)  # Adjust width as needed
