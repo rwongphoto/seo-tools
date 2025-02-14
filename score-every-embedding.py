@@ -51,14 +51,7 @@ def create_navigation_menu(logo_url):
     menu_options = {
         "Home": "https://theseoconsultant.ai/",
         "About": "https://theseoconsultant.ai/about/",
-        "Services": {
-            "SEO Consulting": "https://theseoconsultant.ai/seo-consulting/",
-            "SEO Audit": "https://theseoconsultant.ai/seo-audit/",
-            "Keyword Research": "https://theseoconsultant.ai/keyword-research/",
-            "Content Marketing": "https://theseoconsultant.ai/content-marketing/",
-            "Link Building": "https://theseoconsultant.ai/link-building/",
-            "Technical SEO": "https://theseoconsultant.ai/technical-seo/"
-        },
+        "Services": https://theseoconsultant.ai/seo-services/,
         "Blog": "https://theseoconsultant.ai/blog/",
         "Contact": "https://theseoconsultant.ai/contact/"
     }
