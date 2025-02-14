@@ -64,6 +64,7 @@ smmap==5.0.2
 sniffio==1.3.1
 sortedcontainers==2.4.0
 soupsieve==2.6
+spacy
 streamlit==1.42.0
 sympy==1.13.3
 tenacity==9.0.0
@@ -84,5 +85,6 @@ tzdata==2025.1
 urllib3==2.3.0
 webencodings==0.5.1
 websocket-client==1.8.0
+wordcloud
 wsproto==1.2.0
 zipp==3.21.0
