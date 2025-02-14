@@ -4,10 +4,6 @@ from transformers import BertTokenizer, BertModel
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 import re
-from PIL import Image, ImageDraw, ImageFont
-import cairosvg
-from io import BytesIO
-#from IPython.display import Image as IPythonImage, display # Remove IPython dependency
 
 from bs4 import BeautifulSoup
 from selenium import webdriver
@@ -17,17 +13,51 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 
 @st.cache_resource
-def initialize_model():
-    """Initializes the BERT tokenizer and model."""
+def load_models():
+    """Loads the BERT tokenizer and model only once."""
     tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
     model = BertModel.from_pretrained('bert-base-uncased')
-    model.eval()
+    model.eval()  # Set the model to evaluation mode
     return tokenizer, model
 
-def extract_content_from_url(url):
+def get_embedding(text, model, tokenizer):
+    """Generates a BERT embedding for the given text."""
+    tokenizer.pad_token = tokenizer.unk_token
+    inputs = tokenizer(text, return_tensors='pt', padding=True, truncation=True, max_length=512)
+    outputs = model(**inputs)
+    return outputs.last_hidden_state.mean(dim=1).detach().numpy()
+
+def rank_sentences_by_similarity(text, search_term, tokenizer, model):
     """
-    Extracts text from a URL using Selenium and BeautifulSoup, rendering JavaScript,
-    and returns a list of content blocks (paragraphs, titles, list items).
+    Calculates cosine similarity between sentences and a search term using BERT.
+
+    Returns:
+        A list of tuples: (sentence, similarity score)
+    """
+
+    sentences = re.split(r'(?<!\w\.\w.)(?<![A-Z][a-z]\.)(?<=\.|\?)\s', text)
+    sentences = [s.strip() for s in sentences if s.strip()]
+
+    sentence_embeddings = [get_embedding(sentence, model, tokenizer) for sentence in sentences]
+    search_term_embedding = get_embedding(search_term, model, tokenizer)
+
+    similarities = [cosine_similarity(sentence_embedding, search_term_embedding)[0][0]
+                    for sentence_embedding in sentence_embeddings]
+
+    # Normalize the similarity scores to be between 0 and 1
+    min_similarity = min(similarities)
+    max_similarity = max(similarities)
+    if max_similarity == min_similarity:
+        normalized_similarities = [0.0] * len(similarities)  # Avoid division by zero
+    else:
+        normalized_similarities = [(s - min_similarity) / (max_similarity - min_similarity) for s in similarities]
+
+    return list(zip(sentences, normalized_similarities))
+
+def extract_text_from_url(url):
+    """
+    Extracts text from a URL using Selenium and BeautifulSoup, rendering JavaScript.
+    Returns a single string of all extracted text.
     """
     try:
         chrome_options = Options()
@@ -52,114 +82,33 @@ def extract_content_from_url(url):
         for tag in soup.find_all(['header', 'footer']):
             tag.decompose()
 
-        # Extract paragraphs, titles, and list items
-        content = []
-        for tag in soup.find_all(['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'li']):
-            text = tag.get_text(separator=" ", strip=True)
-            if text:  # Only add if not empty
-                content.append(text)
-
-        return content
+        # Extract all relevant tags and their text content
+        all_relevant_tags = soup.find_all(['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'li', 'p'])
+        text = ""
+        for tag in all_relevant_tags:
+            text += tag.get_text(separator=" ", strip=True) + "\n"
+        return text.strip() # Returns a single string
 
     except Exception as e:
-        st.error(f"Error fetching or processing URL {url}: {e}")
+        print(f"Error fetching or processing URL {url}: {e}")
         return None
 
-def get_embedding(text, model, tokenizer):
-    """Generates a BERT embedding for the given text."""
-    tokenizer.pad_token = tokenizer.unk_token
-    inputs = tokenizer(text, return_tensors='pt', padding=True, truncation=True, max_length=512)
-    outputs = model(**inputs)
-    return outputs.last_hidden_state.mean(dim=1).detach().numpy()
+def highlight_text(text, search_term, tokenizer, model):
+    """Highlights text based on similarity to the search term using HTML/CSS, adding paragraph breaks."""
+    sentences_with_similarity = rank_sentences_by_similarity(text, search_term, tokenizer, model)
 
-def color_code_text_by_similarity_png(content, search_term, image_width=800):
-    """
-    Color-codes the input content blocks (paragraphs, titles, list items) based on
-    cosine similarity to a search term, creating a PNG image for Streamlit display.
-    """
+    highlighted_text = ""
+    for sentence, similarity in sentences_with_similarity:
+        if similarity < 0.35:
+            color = "red"
+        elif similarity < 0.65:
+            color = "black"
+        else:
+            color = "green"
 
-    tokenizer, model = initialize_model()
-
-    # Generate embedding for the search term
-    search_term_embedding = get_embedding(search_term, model, tokenizer)
-
-    # Generate embeddings for each content block and calculate cosine similarities
-    content_embeddings = []
-    similarities = []
-    for block in content:
-        block_embedding = get_embedding(block, model, tokenizer)
-        content_embeddings.append(block_embedding)
-        similarity = cosine_similarity(block_embedding, search_term_embedding)[0][0]
-        similarities.append(similarity)
-
-    # Normalize similarity scores for color mapping
-    min_similarity = min(similarities)
-    max_similarity = max(similarities)
-    max_similarity = max_similarity if max_similarity > min_similarity else min_similarity + 1e-6
-    normalized_similarities = [(s - min_similarity) / (max_similarity - min_similarity)
-                               for s in similarities]
-
-    # --- PNG Generation ---
-    font_size = 14
-    try:
-        font = ImageFont.truetype("FreeSans.ttf", font_size)  # Attempt to load from relative path
-
-    except:
-
-       font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeSans.ttf", font_size) #linux
-
-    line_height = font_size * 1.2  # Add some spacing
-    padding = 10
-    background_color = "white"
-    text_color = "black"
-
-    # Calculate image height based on content and width
-    num_lines = 0
-    for block in content:  # Iterate through content blocks
-        words = block.split()
-        current_line = ""
-        for word in words:
-            test_line = current_line + word + " "
-            if font.getlength(test_line) > image_width - 2 * padding:
-                num_lines += 1
-                current_line = word + " "
-            else:
-                current_line = test_line
-        num_lines += 1  # Add one for the last line
-
-    image_height = int(num_lines * line_height + 2 * padding)
-
-    # Create image
-    image = Image.new("RGB", (image_width, image_height), color=background_color)
-    draw = ImageDraw.Draw(image)
-
-    y_position = padding
-    x_position = padding
-
-    for block, similarity in zip(content, normalized_similarities):
-        # Determine color based on similarity
-        color = "red" if similarity < 0.40 else "black" if similarity < 0.70 else "green"
-
-        # Draw the content block on the image, wrapping if necessary
-        words = block.split()
-        current_line = ""
-        for word in words:
-            test_line = current_line + word + " "
-            if font.getlength(test_line) > image_width - 2 * padding:
-                draw.text((x_position, y_position), current_line, fill=color, font=font)
-                y_position += line_height
-                current_line = word + " "
-            else:
-                current_line = test_line
-        draw.text((x_position, y_position), current_line, fill=color, font=font)  # Draw the last line
-        y_position += line_height
-
-    # Save the image to a BytesIO object for Streamlit
-    img_byte_arr = BytesIO()
-    image.save(img_byte_arr, format='PNG')
-    img_byte_arr = img_byte_arr.getvalue()
-
-    return img_byte_arr
+        # Enclose each sentence in a <p> tag for paragraph breaks
+        highlighted_text += f'<p style="color:{color};">{sentence}</p>'
+    return highlighted_text
 
 def create_navigation_menu(logo_url):
     """Creates a top navigation menu for the Streamlit app with a logo above and centered."""
@@ -175,7 +124,7 @@ def create_navigation_menu(logo_url):
     st.markdown(
         f"""
         <div style="display: flex; justify-content: center;">
-            <img src="{logo_url}" width="250">
+            <img src="{logo_url}" width="350">
         </div>
         """,
         unsafe_allow_html=True
@@ -189,7 +138,7 @@ def create_navigation_menu(logo_url):
           background-color: #f1f1f1; /* Adjust color as needed */
           display: flex;              /* Use flexbox */
           justify-content: center;    /* Horizontally center items */
-          margin-bottom: 20px;        /* Add space below the menu */
+          margin-bottom: 35px;        /* Add space below the menu */
         }
 
         .topnav a {
@@ -226,21 +175,41 @@ def main():
     logo_url = "https://theseoconsultant.ai/wp-content/uploads/2024/12/cropped-theseoconsultant-logo-2.jpg"
     create_navigation_menu(logo_url)
     st.title("Cosine Similarity Heat Map - Paragraphs")
+    st.markdown("Green text is the most relevant to the search query. Red is the least relevant content to search query.")
+
+    st.markdown("---")
 
     # Input fields
-    url = st.text_input("Enter URL:", "")
-    search_term = st.text_input("Enter Search Term:", "")
+    source = st.radio("Select Input Source:", ("Text", "URL"))
+
+    if source == "Text":
+        input_text = st.text_area("Enter your text:", height=300, value="Paste your text here.")
+    else:
+        url = st.text_input("Enter URL:", "")
+        input_text = extract_text_from_url(url)
+        if input_text:
+            st.success("Content extracted from URL.")
+        elif url: # Show warning only if something was entered
+            st.warning("Could not extract content from the URL. Check the URL or try a different one.")
+
+
+    search_term = st.text_input("Enter your search term:", value="Enter Your SEO Keyword Here")
 
     if st.button("Highlight"):
+        tokenizer, model = load_models()
         if not input_text or not search_term:
             st.error("Please enter both text and a search term.")
         else:
             with st.spinner("Generating highlighted text..."):
-                highlighted_text = highlight_text(input_text, search_term)
+                highlighted_text = highlight_text(input_text, search_term, tokenizer, model)
 
             st.markdown(highlighted_text, unsafe_allow_html=True)  # Display highlighted text
 
-    st.markdown("By: [The SEO Consultant.ai](https://theseoconsultant.ai)", unsafe_allow_html=True)
+    st.markdown("---")
+    st.markdown(
+        "Powered by [The SEO Consultant.ai](https://theseoconsultant.ai)",
+        unsafe_allow_html=True
+    )
 
 if __name__ == "__main__":
     main()
