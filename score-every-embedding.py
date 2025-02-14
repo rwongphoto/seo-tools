@@ -44,12 +44,63 @@ def calculate_similarity(text, search_term, tokenizer, model):
         similarities.append(similarity)
 
     return sentences, similarities
+def create_navigation_menu(logo_url):
+    """Creates a top navigation menu for the Streamlit app with a logo."""
 
+    menu_options = {
+        "Home": "https://theseoconsultant.ai/",
+        "About": "https://theseoconsultant.ai/about/",
+        "Services": "https://theseoconsultant.ai/seo-services/",  # Flattened for top nav
+        "Blog": "https://theseoconsultant.ai/blog/",
+        "Contact": "https://theseoconsultant.ai/contact/"
+    }
+
+    # Create columns for layout
+    cols = st.columns([0.2, 0.8])  # Adjust column widths as needed
+
+    with cols[0]:
+        st.image(logo_url, width=150)  # Adjust width as needed
+
+    with cols[1]:
+        st.markdown(
+            """
+            <style>
+            .topnav {
+              overflow: hidden;
+              background-color: #f1f1f1; /* Adjust color as needed */
+            }
+
+            .topnav a {
+              float: left;
+              display: block;
+              color: black; /* Adjust color as needed */
+              text-align: center;
+              padding: 14px 16px;
+              text-decoration: none;
+            }
+
+            .topnav a:hover {
+              background-color: #ddd; /* Adjust color as needed */
+              color: black; /* Adjust color as needed */
+            }
+            </style>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        # Create the top navigation menu
+        menu_html = "<div class='topnav'>"
+        for key, value in menu_options.items():
+            menu_html += f"<a href='{value}' target='_blank'>{key}</a>"
+        menu_html += "</div>"
+
+        st.markdown(menu_html, unsafe_allow_html=True)
 
 def main():
     st.title("Cosine Similarity Score - Every Embedding")
     st.markdown("By: [The SEO Consultant.ai](https://theseoconsultant.ai)") # Credit and link
-
+    logo_url = "https://theseoconsultant.ai/wp-content/uploads/2024/12/cropped-theseoconsultant-logo-2.jpg"
+    create_navigation_menu(logo_url)
 
     # Input text area
     text = st.text_area("Enter Text:",
