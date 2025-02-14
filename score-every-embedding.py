@@ -46,7 +46,7 @@ def calculate_similarity(text, search_term, tokenizer, model):
     return sentences, similarities
     
 def create_navigation_menu(logo_url):
-    """Creates a top navigation menu for the Streamlit app with a logo."""
+    """Creates a top navigation menu for the Streamlit app with a logo above."""
 
     menu_options = {
         "Home": "https://theseoconsultant.ai/",
@@ -56,49 +56,43 @@ def create_navigation_menu(logo_url):
         "Contact": "https://theseoconsultant.ai/contact/"
     }
 
-    # Create columns for layout
-    cols = st.columns([0.2, 0.8])  # Adjust column widths as needed
+    st.image(logo_url, width=250)  # Adjust width as needed
 
-    with cols[0]:
-        st.image(logo_url, width=200)  # Adjust width as needed
+    st.markdown(
+        """
+        <style>
+        .topnav {
+          overflow: hidden;
+          background-color: #f1f1f1; /* Adjust color as needed */
+          display: flex;              /* Use flexbox */
+          justify-content: center;    /* Horizontally center items */
+        }
 
-    with cols[1]:
-        st.markdown(
-            """
-            <style>
-            .topnav {
-              overflow: hidden;
-              background-color: #f1f1f1; /* Adjust color as needed */
-              display: flex;              /* Use flexbox */
-              align-items: center;        /* Vertically align items */
-              height: 100%;               /* Occupy full height of column */
-            }
+        .topnav a {
+          float: left;
+          display: block;
+          color: black; /* Adjust color as needed */
+          text-align: center;
+          padding: 14px 16px;
+          text-decoration: none;
+        }
 
-            .topnav a {
-              float: left;
-              display: block;
-              color: black; /* Adjust color as needed */
-              text-align: center;
-              padding: 14px 16px;
-              text-decoration: none;
-            }
+        .topnav a:hover {
+          background-color: #ddd; /* Adjust color as needed */
+          color: black; /* Adjust color as needed */
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
 
-            .topnav a:hover {
-              background-color: #ddd; /* Adjust color as needed */
-              color: black; /* Adjust color as needed */
-            }
-            </style>
-            """,
-            unsafe_allow_html=True,
-        )
+    # Create the top navigation menu
+    menu_html = "<div class='topnav'>"
+    for key, value in menu_options.items():
+        menu_html += f"<a href='{value}' target='_blank'>{key}</a>"
+    menu_html += "</div>"
 
-        # Create the top navigation menu
-        menu_html = "<div class='topnav'>"
-        for key, value in menu_options.items():
-            menu_html += f"<a href='{value}' target='_blank'>{key}</a>"
-        menu_html += "</div>"
-
-        st.markdown(menu_html, unsafe_allow_html=True)
+    st.markdown(menu_html, unsafe_allow_html=True)
 
 def main():
     logo_url = "https://theseoconsultant.ai/wp-content/uploads/2024/12/cropped-theseoconsultant-logo-2.jpg"
