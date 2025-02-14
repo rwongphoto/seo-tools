@@ -59,7 +59,7 @@ def create_navigation_menu(logo_url):
     st.markdown(
         f"""
         <div style="display: flex; justify-content: center;">
-            <img src="{logo_url}" width="250">
+            <img src="{logo_url}" width="350">
         </div>
         """,
         unsafe_allow_html=True
