@@ -64,7 +64,12 @@ def extract_text_from_url(url):
         chrome_options.add_argument("--headless")
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-dev-shm-usage")
+        # Add User-Agent for iPhone
+        user_agent = "Mozilla/5.0 (iPhone; CPU iPhone OS 14_7_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.7.1 Mobile/15E148 Safari/604.1"
+        chrome_options.add_argument(f"user-agent={user_agent}")
 
+        driver = webdriver.Chrome(options=chrome_options)
+        driver.get(url)
         driver = webdriver.Chrome(options=chrome_options)
         driver.get(url)
 
