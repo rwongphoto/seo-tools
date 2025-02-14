@@ -105,9 +105,18 @@ def create_navigation_menu(logo_url):
 def main():
     logo_url = "https://theseoconsultant.ai/wp-content/uploads/2024/12/cropped-theseoconsultant-logo-2.jpg"
     create_navigation_menu(logo_url)
-    st.title("Cosine Similarity Score - Every Embedding")
-    
-
+    st.markdown(
+        """
+        <style>
+        .title {
+            display: flex;
+            justify-content: center;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+    st.markdown("<h1 class='title'>Cosine Similarity Score - Every Embedding</h1>", unsafe_allow_html=True)
     # Input text area
     text = st.text_area("Enter Text:",
                          """""")
