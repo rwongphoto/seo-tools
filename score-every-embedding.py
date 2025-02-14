@@ -68,6 +68,9 @@ def create_navigation_menu(logo_url):
             .topnav {
               overflow: hidden;
               background-color: #f1f1f1; /* Adjust color as needed */
+              display: flex;              /* Use flexbox */
+              align-items: center;        /* Vertically align items */
+              height: 100%;               /* Occupy full height of column */
             }
 
             .topnav a {
