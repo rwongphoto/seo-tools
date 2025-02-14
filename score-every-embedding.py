@@ -46,7 +46,7 @@ def calculate_similarity(text, search_term, tokenizer, model):
     return sentences, similarities
 
 def main():
-    st.title("Text Similarity Analyzer")
+    st.title("Cosine Similarity Score - Every Embedding")
     st.markdown("By: [The SEO Consultant.ai](https://theseoconsultant.ai)") # Credit and link
 
     # Input text area
