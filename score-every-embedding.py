@@ -73,7 +73,7 @@ def create_navigation_menu(logo_url):
           background-color: #f1f1f1; /* Adjust color as needed */
           display: flex;              /* Use flexbox */
           justify-content: center;    /* Horizontally center items */
-          margin-bottom: 50px;        /* Add space below the menu */
+          margin-bottom: 35px;        /* Add space below the menu */
         }
 
         .topnav a {
