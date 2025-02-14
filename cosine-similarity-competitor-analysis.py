@@ -90,7 +90,7 @@ def calculate_overall_similarity(urls, search_term, model, tokenizer):
 
 
 def main():
-    st.title("URL Similarity App")
+    st.title("Cosine Similarity Competitor Analysis")
     st.markdown("By: [The SEO Consultant.ai](https://theseoconsultant.ai)")
 
     # Input fields
