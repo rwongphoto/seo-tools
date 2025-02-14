@@ -44,19 +44,9 @@ def calculate_similarity(text, search_term, tokenizer, model):
         similarities.append(similarity)
 
     return sentences, similarities
-def create_navigation_menu(logo_url):
-    """Creates a top navigation menu for the Streamlit app with a logo."""
-
-    menu_options = {
-        "Home": "https://theseoconsultant.ai/",
-        "About": "https://theseoconsultant.ai/about/",
-        "Services": "https://theseoconsultant.ai/seo-services/",  # Flattened for top nav
-        "Blog": "https://theseoconsultant.ai/blog/",
-        "Contact": "https://theseoconsultant.ai/contact/"
-    }
-
+    
     # Create columns for layout
-    cols = st.columns([0.2, 0.8])  # Adjust column widths as needed
+    cols = st.columns([0.25, 0.75])  # Adjust column widths as needed
 
     with cols[0]:
         st.image(logo_url, width=150)  # Adjust width as needed
@@ -71,6 +61,8 @@ def create_navigation_menu(logo_url):
               display: flex;              /* Use flexbox */
               align-items: center;        /* Vertically align items */
               height: 100%;               /* Occupy full height of column */
+              justify-content: flex-start; /* Align items to the start */
+              padding-left: 20px;         /* Add some left padding */
             }
 
             .topnav a {
