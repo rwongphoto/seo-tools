@@ -45,9 +45,42 @@ def calculate_similarity(text, search_term, tokenizer, model):
 
     return sentences, similarities
 
+def create_navigation_menu(logo_url):
+    """Creates a navigation menu for the Streamlit app with a logo."""
+
+    menu_options = {
+        "Home": "https://theseoconsultant.ai/",
+        "About": "https://theseoconsultant.ai/about/",
+        "Services": {
+            "SEO Consulting": "https://theseoconsultant.ai/seo-consulting/",
+            "SEO Audit": "https://theseoconsultant.ai/seo-audit/",
+            "Keyword Research": "https://theseoconsultant.ai/keyword-research/",
+            "Content Marketing": "https://theseoconsultant.ai/content-marketing/",
+            "Link Building": "https://theseoconsultant.ai/link-building/",
+            "Technical SEO": "https://theseoconsultant.ai/technical-seo/"
+        },
+        "Blog": "https://theseoconsultant.ai/blog/",
+        "Contact": "https://theseoconsultant.ai/contact/"
+    }
+
+    st.sidebar.image(logo_url, width=200)  # Adjust width as needed
+    st.sidebar.header("Navigation")
+
+    for key, value in menu_options.items():
+        if isinstance(value, str):  # Simple link
+            if st.sidebar.button(key):
+                st.components.v1.iframe(value, height=200)
+        else:  # Submenu
+            with st.sidebar.expander(key):
+                for sub_key, sub_value in value.items():
+                    if st.button(sub_key):
+                        st.components.v1.iframe(sub_value, height=200)
+
 def main():
     st.title("Cosine Similarity Score - Every Embedding")
     st.markdown("By: [The SEO Consultant.ai](https://theseoconsultant.ai)") # Credit and link
+    logo_url = "https://theseoconsultant.ai/wp-content/uploads/2024/12/cropped-theseoconsultant-logo-2.jpg"
+    create_navigation_menu(logo_url)
 
     # Input text area
     text = st.text_area("Enter Text:",
